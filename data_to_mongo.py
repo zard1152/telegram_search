@@ -8,7 +8,7 @@ import time
 from pymongo.collection import Collection
 import pytz
 from info import client, db_dialogs, db_messages, exclude_name
-
+import re
 
 def to_int64(d):
     """递归将dict或list中的int变为bson.int64.Int64
@@ -34,7 +34,7 @@ def to_int64(d):
     return d
 
 
-def get_dialogs(client: telethon.TelegramClient, collection: Collection = None, exclude_name=('草稿',)):
+def get_dialogs(client: telethon.TelegramClient, collection: Collection = None, exclude_patterns=(r'.*English Chatting Group.*',)):
     """获取所有频道和群组的对话
 
     Args:
@@ -45,9 +45,29 @@ def get_dialogs(client: telethon.TelegramClient, collection: Collection = None, 
     Returns:
         list: 所有对话
     """
+import re
+
+def get_dialogs(client: telethon.TelegramClient, collection: Collection = None, exclude_patterns=(r'.*English Chatting Group.*','大家用.*','NobyDa Script.*','.*BSC_chain.*',)):
+    
+    """获取所有频道和群组的对话
+
+    Args:
+        client (telethon.TelegramClient): 客户端
+        collection (Collection, optional): 要存储的mongodb表
+        exclude_patterns (list, tuple, set, optional): 黑名单, 排除的频道和群组的名称的正则表达式模式
+
+    Returns:
+        list: 所有对话
+    """
+    def is_excluded(name, patterns):
+        for pattern in patterns:
+            if re.match(pattern, name):
+                return True
+        return False
+
     telethon.tl.custom.dialog.Dialog  # dialog
     dialog_L = []
-    exclude_name = set(exclude_name)
+    exclude_patterns = set(exclude_patterns)
     new_name = old_name = upserted_count = 0
     # 创建索引
     if collection is not None:
@@ -55,7 +75,7 @@ def get_dialogs(client: telethon.TelegramClient, collection: Collection = None, 
             collection.create_index([(i, pymongo.ASCENDING)], unique=False, background=True)
     # 开始获取对话
     for dialog in tqdm(client.iter_dialogs(), 'get_dialogs'):
-        if dialog.is_user or dialog.name in exclude_name:
+        if dialog.is_user or is_excluded(dialog.name, exclude_patterns):
             continue
         dialog_ = to_int64({
             'id': dialog.id,  # int, 对话id
@@ -87,6 +107,7 @@ def get_dialogs(client: telethon.TelegramClient, collection: Collection = None, 
         dialog_L.append(dialog_)
     print('new_name:', new_name, '; old_name:', old_name, '; upserted_count:', upserted_count)
     return dialog_L
+
 
 
 def get_messages(client: telethon.TelegramClient, dialog_id=-1001078465602,
