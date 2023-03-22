@@ -1,6 +1,7 @@
 from info import db_dialogs, db_messages
 from pprint import pprint
 import time
+from datetime import datetime, timedelta
 
 
 def search_dialog(dialog_re, options='$i', show=False):
@@ -32,7 +33,7 @@ def search_dialog(dialog_re, options='$i', show=False):
     return dialogs_id_title
 
 
-def search(dialog_re, message_re, limit=20, options='$i', show=False):
+def search(dialog_re, message_re, limit=20, options='$i', show=False, start_date=None, end_date=None):
     """通过正则方式检索mongo数据库对话和消息
 
     Args:
@@ -57,6 +58,7 @@ def search(dialog_re, message_re, limit=20, options='$i', show=False):
     messages_ret = list(db_messages.aggregate([
         {"$match": {
             **({"dialog_id": {"$in": list(dialogs_id_title)}} if dialog_re else {}),
+            **({"date": {"$gte": start_date, "$lt": end_date}} if start_date and end_date else {}),
             "$or": [
                 {"message": {  # 检索消息
                     "$regex": message_re,
@@ -113,6 +115,10 @@ def search(dialog_re, message_re, limit=20, options='$i', show=False):
     return dialogs_id_title, messages_ret
 
 
+search_date = datetime(2023, 3, 22)
+start_date = search_date
+end_date = search_date + timedelta(days=1)
+
 if __name__ == '__main__':
     # 检索群组/频道的正则, 留空就是搜索全部
     dialog_re = ""
@@ -121,3 +127,4 @@ if __name__ == '__main__':
     # 最多返回的消息数量
     limit = 50
     search(dialog_re, message_re, limit=limit, show=True)
+    search(dialog_re, message_re, limit=limit, show=True, start_date=start_date, end_date=end_date)
