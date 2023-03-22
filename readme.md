@@ -27,8 +27,9 @@
 8. 执行 python mongo_analysis.py 统计数据库中的群/频道和用户信息
    - 例如: <img src="stat.png" width = "350" alt="" align=center />
 
+---
 
-feat:
+# feat:
    - 支持查询某一天的数据, 在 search.py 中修改 search_date 和 end_date.
    - 支持正则匹配黑名单群聊, 在 config.json 中对 exclude_name 的值左右添加 .* 即可
    
