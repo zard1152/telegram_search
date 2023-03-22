@@ -123,7 +123,7 @@ if __name__ == '__main__':
     # 检索群组/频道的正则, 留空就是搜索全部
     dialog_re = ""
     # 检索消息的正则
-    message_re = '^(?=.*推荐)(?=.*(vps|nat))'
+    message_re = '^(?=.*推荐)(?=.*(vps|nat))'  # 只有当字符串中同时出现“推荐”和“vps”或者同时出现“推荐”和“nat”时，该正则表达式才会匹配成功。
     # 最多返回的消息数量
     limit = 50
     search(dialog_re, message_re, limit=limit, show=True)
