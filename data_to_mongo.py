@@ -8,7 +8,7 @@ import time
 from pymongo.collection import Collection
 import pytz
 from info import client, db_dialogs, db_messages, exclude_name
-
+import re 
 
 def to_int64(d):
     """递归将dict或list中的int变为bson.int64.Int64
@@ -51,7 +51,8 @@ def get_dialogs(client: telethon.TelegramClient, collection: Collection = None, 
             collection.create_index([(i, pymongo.ASCENDING)], unique=False, background=True)
     # 开始获取对话
     for dialog in tqdm(client.iter_dialogs(), 'get_dialogs'):
-        if dialog.is_user or dialog.name in exclude_name:
+        if dialog.is_user or any(re.search(pattern, dialog.name) for pattern in exclude_name):
+        # if dialog.is_user or dialog.name in exclude_name:
             continue
         dialog_ = to_int64({
             'id': dialog.id,  # int, 对话id
