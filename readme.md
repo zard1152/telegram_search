@@ -7,6 +7,7 @@
 
 # 教程
 1. 前往 https://my.telegram.org 获取 api_id 和 api_hash
+   - 注意, V PN 要和手机号码地区一致, 不然 create 时会报 error, +86 可以试试香港的节点, 其它 area 的手机号若无法创建就开个无痕窗口一直重复 create (我搞了一个多小时才获取到)
 2. 安装 [mongodb](https://www.mongodb.com/try/download/community), 例如:
    - wget https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu2004-5.0.9.tgz
    - tar -xvf mongodb-* && cd mongodb-* && mkdir data
