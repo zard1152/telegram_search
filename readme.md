@@ -19,6 +19,7 @@
 3. 将 config_example.json 改名为 config.json 并将其中的参数修改为自己的信息
 4. 安装 python3, 执行 pip install -r requirements.txt 安装相关包
 5. 执行 python -u data_to_mongo.py 实时获取群和频道消息到数据库. 终止后再运行会自动接着数据库中最新消息接着下载
+   - 后台执行 `nohup python3 -u data_to_mongo.py > data_to_mongo.log 2>&1 &`
    - 注意: 在执行后提示输入时需要手机号, 比如: +1123456, 之后会自动获取登录 code 输入. 不要输入机器人 token, 会导致代码报错.
    - 消息存储例子: <img src="message.png" width = "350" alt="" align=center />
 6. 获取之后修改 search.py 中的检索正则, 然后执行 python search.py 测试检索
