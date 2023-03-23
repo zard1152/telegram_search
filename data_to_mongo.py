@@ -9,7 +9,7 @@ from pymongo.collection import Collection
 import pytz
 from info import client, db_dialogs, db_messages, exclude_name
 import re 
-import asyncio
+
 
 
 def to_int64(d):
@@ -88,7 +88,7 @@ def get_dialogs(client: telethon.TelegramClient, collection: Collection = None, 
     return dialog_L
 
 
-async def get_messages(client: telethon.TelegramClient, dialog_id=-1001078465602,
+def get_messages(client: telethon.TelegramClient, dialog_id=-1001078465602,
                  min_id=0, max_id=0, limit=None, collection: Collection = None, tqdm_desc='get_messages'):
 
     """获取一个对话的所有消息
@@ -114,7 +114,7 @@ async def get_messages(client: telethon.TelegramClient, dialog_id=-1001078465602
             del x['_']
         return x
     
-    batch_size = 100  # 批量操作的条数
+    batch_size = 1000  # 批量操作的条数
     update_operations = []  # 用于存储批量更新操作的列表
     message_L = []
     dialog_id = bson.int64.Int64(dialog_id)
@@ -137,7 +137,7 @@ async def get_messages(client: telethon.TelegramClient, dialog_id=-1001078465602
     bar = client.iter_messages(dialog_id, limit=limit, reverse=True, **paras)
     if tqdm_desc is not None:
         print(tqdm_desc)  # 有时 iter_messages 出错
-        async for message in client.iter_messages(dialog_id, limit=1, reverse=False):
+        for message in client.iter_messages(dialog_id, limit=1, reverse=False):
             total = message.id  # 计算总数. 不是太准, 中间可能有删除的消息, 后面也有可能新增消息
             if 'max_id' in paras:
                 total = min(total, paras['max_id'])
@@ -145,7 +145,7 @@ async def get_messages(client: telethon.TelegramClient, dialog_id=-1001078465602
                 total -= paras['min_id']
             bar = tqdm(bar, tqdm_desc, total=min(total, limit) if limit else total)
         # 修改后的开始获取消息部分
-    async for message in bar:
+    for message in bar:
         if message.message is None or message.message.strip() == '':
             continue
         message_ = to_int64({
@@ -194,30 +194,22 @@ async def get_messages(client: telethon.TelegramClient, dialog_id=-1001078465602
     print('matched_count:', matched_count, '; modified_count:', modified_count, '; upserted_count:', upserted_count)
     return upserted_count if upserted_count else message_L
 
-async def main_loop():
+
+
+if __name__ == '__main__':
+    client.start()
     # 不断循环获取群和消息
     while True:
         print(datetime.now())
-        dialog_L = await get_dialogs(client, collection=db_dialogs, exclude_name=exclude_name)  # 获取群
+        dialog_L = get_dialogs(client, collection=db_dialogs, exclude_name=exclude_name)  # 获取群
         for i, dialog in enumerate(dialog_L):
             now = datetime.utcnow().replace(tzinfo=pytz.timezone('UTC'))
             if now - dialog['date'] > timedelta(hours=24*365*50):  # 太长时间没有消息的就跳过(哪怕是首次)
                 print('跳过:', dialog['id'], dialog['title'])
                 continue
             # 获取消息
-            await get_messages(client, dialog_id=dialog['id'], collection=db_messages,
+            get_messages(client, dialog_id=dialog['id'], collection=db_messages,
                          tqdm_desc='{} ID({}): {}'.format(i+1, dialog['id'], dialog['title']))
         print(datetime.now())
-        await asyncio.sleep(600)  # 隔多少秒再循环一次
-
-if __name__ == '__main__':
-    try:
-        client.start()
-        client.loop.run_until_complete(main_loop())
-    except KeyboardInterrupt:
-        print("Interrupted by user. Exiting...")
-    finally:
-        client.loop.run_until_complete(client.disconnect())
-        client.loop.close()
-
+        time.sleep(600)  # 隔多少秒再循环一次
 
