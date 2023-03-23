@@ -88,6 +88,7 @@ def get_dialogs(client: telethon.TelegramClient, collection: Collection = None, 
 
 def get_messages(client: telethon.TelegramClient, dialog_id=-1001078465602,
                  min_id=0, max_id=0, limit=None, collection: Collection = None, tqdm_desc='get_messages'):
+
     """获取一个对话的所有消息
     Args:
         client (telethon.TelegramClient): 客户端
@@ -110,6 +111,9 @@ def get_messages(client: telethon.TelegramClient, dialog_id=-1001078465602,
             x = x.to_dict()
             del x['_']
         return x
+    
+    batch_size = 100  # 批量操作的条数
+    update_operations = []  # 用于存储批量更新操作的列表
     message_L = []
     dialog_id = bson.int64.Int64(dialog_id)
     # 单独处理部分 iter_messages 参数, 防止错误
@@ -138,6 +142,7 @@ def get_messages(client: telethon.TelegramClient, dialog_id=-1001078465602,
             if 'min_id' in paras:
                 total -= paras['min_id']
             bar = tqdm(bar, tqdm_desc, total=min(total, limit) if limit else total)
+        # 修改后的开始获取消息部分
     for message in bar:
         if message.message is None or message.message.strip() == '':
             continue
@@ -168,13 +173,62 @@ def get_messages(client: telethon.TelegramClient, dialog_id=-1001078465602,
         if collection is None:  # 不保存数据库
             message_L.append(message_)
         else:
-            result = collection.update_one({'id': message_['id'], 'dialog_id': message_['dialog_id']},
-                                           {'$setOnInsert': message_}, upsert=True)
-            matched_count += result.matched_count
-            modified_count += result.modified_count
-            upserted_count += 1 if result.upserted_id is not None else 0
+            update_operations.append(pymongo.UpdateOne({'id': message_['id'], 'dialog_id': message_['dialog_id']}, {'$setOnInsert': message_}, upsert=True))
+            
+            if len(update_operations) >= batch_size:
+                result = collection.bulk_write(update_operations)
+                matched_count += result.matched_count
+                modified_count += result.modified_count
+                upserted_count += len(result.upserted_ids)
+                update_operations = []
+
+    # 如果还有剩余的更新操作，执行它们
+    if update_operations:
+        result = collection.bulk_write(update_operations)
+        matched_count += result.matched_count
+        modified_count += result.modified_count
+        upserted_count += len(result.upserted_ids)
+
     print('matched_count:', matched_count, '; modified_count:', modified_count, '; upserted_count:', upserted_count)
     return upserted_count if upserted_count else message_L
+
+    # for message in bar:
+    #     if message.message is None or message.message.strip() == '':
+    #         continue
+    #     message_ = to_int64({
+    #         'pinned': message.pinned,  # bool, 此消息此时是否是置顶帖子
+    #         'id': message.id,  # int, 消息id
+    #         'dialog_id': dialog_id,  # int, 也可以参考 message.peer_id.channel_id, telethon.tl.types.PeerChannel
+    #         'date': message.date,  # datetime.datetime, 发布时间
+    #         'message': message.message,  # str, 内容
+    #         'ttl_period': message.ttl_period,  # int, 消息的生存时间, 例如一些验证, 好像有一些例外
+    #         'fwd_from': to_dict(message.fwd_from),  # 转发标头, telethon.tl.types.MessageFwdHeader
+    #         'reply_to': to_dict(message.reply_to),  # 回复标头, telethon.tl.types.MessageReplyHeader
+    #         # 限制原因, telethon.tl.types.RestrictionReason
+    #         'restriction_reason': [to_dict(i) for i in message.restriction_reason] if message.restriction_reason else None,
+    #         'username': getattr(message.sender, 'username', None),  # str, 用户唯一名, telethon.tl.types.User
+    #         # int, 用户id, 等价于 message.from_id.user_id (telethon.tl.types.PeerUser.user_id)
+    #         'user_id': getattr(message.sender, 'id', None),
+    #         'user_fn': getattr(message.sender, 'first_name', None),  # str, 用户 first_name
+    #         'user_ln': getattr(message.sender, 'last_name', None),  # str, 用户 last_name
+    #         'acquisition_time': datetime.utcnow(),  # datetime.datetime, 获取时间
+    #         'media': to_dict(message.media),  # 媒体
+    #         'file_name': getattr(message.file, 'name', None),  # 文件名
+    #         'file_ext': getattr(message.file, 'ext', None),  # 文件扩展名
+    #     })
+    #     for k, v in list(message_.items()):
+    #         if v is None:  # 删除 null 节省空间
+    #             del message_[k]
+    #     if collection is None:  # 不保存数据库
+    #         message_L.append(message_)
+    #     else:
+    #         result = collection.update_one({'id': message_['id'], 'dialog_id': message_['dialog_id']},
+    #                                        {'$setOnInsert': message_}, upsert=True)
+    #         matched_count += result.matched_count
+    #         modified_count += result.modified_count
+    #         upserted_count += 1 if result.upserted_id is not None else 0
+    # print('matched_count:', matched_count, '; modified_count:', modified_count, '; upserted_count:', upserted_count)
+    # return upserted_count if upserted_count else message_L
 
 
 if __name__ == '__main__':
