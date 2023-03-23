@@ -211,7 +211,13 @@ async def main_loop():
         await asyncio.sleep(600)  # 隔多少秒再循环一次
 
 if __name__ == '__main__':
-    client.start()
-    asyncio.run(main_loop())
+    try:
+        client.start()
+        client.loop.run_until_complete(main_loop())
+    except KeyboardInterrupt:
+        print("Interrupted by user. Exiting...")
+    finally:
+        client.loop.run_until_complete(client.disconnect())
+        client.loop.close()
 
 
