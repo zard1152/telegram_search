@@ -32,7 +32,7 @@
 # feat:
    - 支持查询某一天的数据, 在 search.py 中修改 search_date 和 end_date.
    - 支持正则匹配黑名单群聊, 在 config.json 中对 exclude_name 的值左右添加 .* 即可
-   - 增加批量插入数据库, 修改 batch_size 调整单次插入的数据量.
+   - 支持批量插入 messages 到数据库, 修改 batch_size 调整单次插入的数据量.
    - 
 # 计划
 - ~~扩充分词等字段, 用于快速检索~~
