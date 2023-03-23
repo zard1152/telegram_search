@@ -114,7 +114,7 @@ def get_messages(client: telethon.TelegramClient, dialog_id=-1001078465602,
             del x['_']
         return x
     
-    batch_size = 1000  # 批量操作的条数
+    batch_size = 200  # 批量操作的条数
     update_operations = []  # 用于存储批量更新操作的列表
     message_L = []
     dialog_id = bson.int64.Int64(dialog_id)
