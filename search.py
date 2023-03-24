@@ -2,7 +2,7 @@ from info import db_dialogs, db_messages
 from pprint import pprint
 import time
 from datetime import datetime, timedelta
-
+import json
 
 def search_dialog(dialog_re, options='$i', show=False):
     """通过正则方式检索mongo数据库对话
@@ -114,18 +114,33 @@ def search(dialog_re, message_re, limit=20, options='$i', show=False, start_date
         pprint([(i+1, m) for i, m in enumerate(messages_ret)])
     return dialogs_id_title, messages_ret
 
+def save_results_to_json(dialogs_id_title, messages_ret, file_name="output.json"):
+    data = {
+        "dialogs": dialogs_id_title,
+        "messages": messages_ret
+    }
+    
+    with open(file_name, "w", encoding="utf-8") as file:
+        json.dump(data, file, ensure_ascii=False, indent=4)
+        
 
 search_date = datetime(2023, 3, 22)
 start_date = search_date
 end_date = search_date + timedelta(days=1)
 
+    
 if __name__ == '__main__':
     # 检索群组/频道的正则, 留空就是搜索全部
     dialog_re = ""
     # 检索消息的正则
-    message_re = '^(?=.*推荐)(?=.*(vps|nat))'  # 只有当字符串中同时出现“推荐”和“vps”或者同时出现“推荐”和“nat”时，该正则表达式才会匹配成功。
+    message_re = '(AI|人工智能|vps|谷歌|google|StableDiffusion|midjourney|LLama|nvidia|绘图|画图|Altman|LLM|微软)'
+
+    # message_re = '^(?=.*推荐)(?=.*(vps|nat))'  # 只有当字符串中同时出现“推荐”和“vps”或者同时出现“推荐”和“nat”时，该正则表达式才会匹配成功。
     # 最多返回的消息数量
-    limit = 50
-    search(dialog_re, message_re, limit=limit, show=True)
-    search(dialog_re, message_re, limit=limit, show=True, start_date=start_date, end_date=end_date) # 搜寻 search_date 当天的记录
+    limit = 10
+    #search(dialog_re, message_re, limit=limit, show=True)
+    # search(dialog_re, message_re, limit=limit, show=True, start_date=start_date, end_date=end_date) # 搜寻 search_date 当天的记录
     search(dialog_re, message_re, limit=limit, show=True, start_date=None, end_date=None) # 原规则
+    
+    dialogs_id_title, messages_ret = search(dialog_re, message_re, limit=limit, show=True, start_date=None, end_date=None)
+    save_results_to_json(dialogs_id_title, messages_ret)
