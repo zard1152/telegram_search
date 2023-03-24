@@ -3,93 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Visualization</title>
+    <title>JSON Visualization</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        .chat-container {
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            box-sizing: border-box;
-            background-color: #f2f2f2;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .chat {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        .chat li {
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            background-color: #ffffff;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .chat li p {
-            margin: 0;
-        }
-
-        .message {
-            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div id="chat-container"></div>
-
+    <h1>Formatted JSON Data:</h1>
+    <pre id="formatted-json"></pre>
 
     <script>
-        const chatContainer = document.getElementById('chat-container');
-    
-        function displayMessage(message) {
-            const chat = document.createElement('ul');
-            chat.className = 'chat';
-    
-            const listItem = document.createElement('li');
-            listItem.innerHTML = `
-                <p><span class="user">${message.user}</span> <span class="date">${message.date}</span></p>
-                <p class="message">${message.message}</p>
-            `;
-            chat.appendChild(listItem);
-    
-            if (message.reply_message.length > 0) {
-                const replyItem = document.createElement('li');
-                replyItem.innerHTML = `
-                    <p><span class="user">${message.reply_message[0].user}</span> <span class="date">${message.reply_message[0].date}</span></p>
-                    <p class="message">Reply: ${message.reply_message[0].message}</p>
-                `;
-                chat.appendChild(replyItem);
-            }
-    
-            chatContainer.appendChild(chat);
-        }
-    
-        // Fetch data from output.json and display messages
-        fetch('output.json')
-            .then(response => response.json())
-            .then(json_data => {
-                json_data.messages.forEach(message => {
-                    displayMessage(message);
-                });
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
-    
+        const formattedJsonElement = document.getElementById('formatted-json');
+
+// Fetch data from output.json and display formatted JSON
+fetch('output.json')
+    .then(response => response.json())
+    .then(json_data => {
+        formattedJsonElement.textContent = JSON.stringify(json_data, null, 4);
+    })
+    .catch(error => {
+        console.error('Error fetching data:', error);
+    });
+
     </script>
-    
-    
-    
 </body>
 </html>
