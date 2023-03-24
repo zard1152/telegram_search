@@ -36,11 +36,11 @@
         
             return Object.entries(jsonData).map(([key, value]) => {
                 if (key === 'messages') {
-                    return `${key}: [\n${value.map(formatMessage).join(',\n')}\n]`;
+                    return `${key}: [\n${value.map(formatMessage).join('\n')}\n]`;
                 } else {
                     return `${key}: ${value}`;
                 }
-            }).join(',\n');
+            }).join('\n');
         }
         
         function formatMessage(message) {
@@ -52,10 +52,11 @@
                     } else {
                         return `<span class="key-value">${key}: ${value}</span>`;
                     }
-                }).join(', ');
+                }).join(' ');
         
             return `{${formattedMessage}}`;
         }
+        
         // Fetch data from output.json and display customized JSON
         fetch('output.json')
             .then(response => response.json())
