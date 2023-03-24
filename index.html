@@ -52,57 +52,43 @@
     <script>
         const chatContainer = document.getElementById('chat-container');
     
-        function displayMessage(dialogWrapper, message) {
+        function displayMessage(message) {
+            const chat = document.createElement('ul');
+            chat.className = 'chat';
+    
             const listItem = document.createElement('li');
-    
-            let replyMessage = '';
-            if (message.reply_message && message.reply_message.length > 0) {
-                replyMessage = `<p class="reply-message">Reply: ${message.reply_message[0].message}</p>`;
-            }
-    
             listItem.innerHTML = `
                 <p><span class="user">${message.user}</span> <span class="date">${message.date}</span></p>
-                ${replyMessage}
                 <p class="message">${message.message}</p>
             `;
-            dialogWrapper.appendChild(listItem);
+            chat.appendChild(listItem);
+    
+            if (message.reply_message.length > 0) {
+                const replyItem = document.createElement('li');
+                replyItem.innerHTML = `
+                    <p><span class="user">${message.reply_message[0].user}</span> <span class="date">${message.reply_message[0].date}</span></p>
+                    <p class="message">Reply: ${message.reply_message[0].message}</p>
+                `;
+                chat.appendChild(replyItem);
+            }
+    
+            chatContainer.appendChild(chat);
         }
     
         // Fetch data from output.json and display messages
         fetch('output.json')
             .then(response => response.json())
             .then(json_data => {
-                const groupedMessages = {};
-    
                 json_data.messages.forEach(message => {
-                    if (!groupedMessages[message.dialog]) {
-                        groupedMessages[message.dialog] = [];
-                    }
-                    groupedMessages[message.dialog].push(message);
-                });
-    
-                Object.entries(groupedMessages).forEach(([dialogName, dialogMessages]) => {
-                    const dialogWrapper = document.createElement('div');
-                    dialogWrapper.classList.add('dialog-wrapper');
-    
-                    const dialogTitle = document.createElement('h2');
-                    dialogTitle.textContent = dialogName;
-                    dialogWrapper.appendChild(dialogTitle);
-    
-                    const dialogList = document.createElement('ul');
-                    dialogWrapper.appendChild(dialogList);
-    
-                    dialogMessages.forEach(message => {
-                        displayMessage(dialogList, message);
-                    });
-    
-                    chatContainer.appendChild(dialogWrapper);
+                    displayMessage(message);
                 });
             })
             .catch(error => {
                 console.error('Error fetching data:', error);
             });
+    
     </script>
+    
     
     
 </body>
