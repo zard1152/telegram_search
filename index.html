@@ -5,9 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JSON Visualization</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
+
+            body {
+                font-family: Arial, sans-serif;
+            }
+            .bold-highlight {
+                font-weight: bold;
+                background-color: yellow;
+            }
+
     </style>
 </head>
 <body>
@@ -15,13 +21,40 @@
     <pre id="formatted-json"></pre>
 
     <script>
-        const formattedJsonElement = document.getElementById('formatted-json');
+const formattedJsonElement = document.getElementById('formatted-json');
 
-// Fetch data from output.json and display formatted JSON
+function formatJson(jsonData) {
+    // Remove the 'dialogs' key from the jsonData object
+    delete jsonData.dialogs;
+
+    return Object.entries(jsonData).map(([key, value]) => {
+        if (key === 'messages') {
+            return `${key}: [\n${value.map(formatMessage).join(',\n')}\n]`;
+        } else {
+            return `${key}: ${value}`;
+        }
+    }).join(',\n');
+}
+
+function formatMessage(message) {
+    const formattedMessage = Object.entries(message)
+        .filter(([key]) => key !== 'dialogs')
+        .map(([key, value]) => {
+            if (key === 'message' || key === 'date' || key === 'reply_message') {
+                return `<span class="bold-highlight">${key}: ${value}</span>`;
+            } else {
+                return `${key}: ${value}`;
+            }
+        }).join(', ');
+
+    return `{ ${formattedMessage} }`;
+}
+
+// Fetch data from output.json and display customized JSON
 fetch('output.json')
     .then(response => response.json())
     .then(json_data => {
-        formattedJsonElement.textContent = JSON.stringify(json_data, null, 4);
+        formattedJsonElement.innerHTML = formatJson(json_data);
     })
     .catch(error => {
         console.error('Error fetching data:', error);
