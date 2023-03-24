@@ -27,6 +27,7 @@
     <pre id="formatted-json"></pre>
 
     <script>
+        
         const formattedJsonElement = document.getElementById('formatted-json');
 
         function formatJson(jsonData) {
@@ -46,16 +47,15 @@
             const formattedMessage = Object.entries(message)
                 .filter(([key]) => key !== 'dialogs')
                 .map(([key, value]) => {
-                    if (key === 'message' || key === 'date' || key === 'reply_message') {
+                    if (key === 'message' || key === 'date' || key === 'reply_message' || key === 'web_title' || key === 'web_description') {
                         return `<span class="key-value bold-highlight">${key}: ${value}</span>`;
                     } else {
                         return `<span class="key-value">${key}: ${value}</span>`;
                     }
                 }).join(', ');
         
-            return `{ ${formattedMessage} }`;
+            return `{${formattedMessage}}`;
         }
-        
         // Fetch data from output.json and display customized JSON
         fetch('output.json')
             .then(response => response.json())
@@ -65,7 +65,8 @@
             .catch(error => {
                 console.error('Error fetching data:', error);
             });
-        
+
+            
     </script>
 </body>
 </html>
