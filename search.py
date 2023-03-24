@@ -149,7 +149,7 @@ if __name__ == '__main__':
     limit = 10
     #search(dialog_re, message_re, limit=limit, show=True)
     # search(dialog_re, message_re, limit=limit, show=True, start_date=start_date, end_date=end_date) # 搜寻 search_date 当天的记录
-    search(dialog_re, message_re, limit=limit, show=True, start_date=None, end_date=None) # 原规则
+    # search(dialog_re, message_re, limit=limit, show=True, start_date=None, end_date=None) # 原规则
     
     dialogs_id_title, messages_ret = search(dialog_re, message_re, limit=limit, show=True, start_date=None, end_date=None)
     save_results_to_json(dialogs_id_title, messages_ret)
