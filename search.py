@@ -119,6 +119,8 @@ class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, ObjectId):
             return str(obj)
+        elif isinstance(obj, datetime):
+            return obj.isoformat()
         return super(JSONEncoder, self).default(obj)
 
 def save_results_to_json(dialogs_id_title, messages_ret, file_name="output.json"):
@@ -129,7 +131,6 @@ def save_results_to_json(dialogs_id_title, messages_ret, file_name="output.json"
     
     with open(file_name, "w", encoding="utf-8") as file:
         json.dump(data, file, cls=JSONEncoder, ensure_ascii=False, indent=4)
-        
         
 
 search_date = datetime(2023, 3, 22)
