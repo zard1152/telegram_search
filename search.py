@@ -110,9 +110,9 @@ def search(dialog_re, message_re, limit=20, options='$i', show=False, start_date
             "reply_message": "$reply.message",
         }},
     ]))
-    if show:
-        print(round(time.time()-start, 1), '='*20, '检索到的消息({}):'.format(len(messages_ret)), message_re)
-        pprint([(i+1, m) for i, m in enumerate(messages_ret)])
+    # if show:
+    #     print(round(time.time()-start, 1), '='*20, '检索到的消息({}):'.format(len(messages_ret)), message_re)
+    #     pprint([(i+1, m) for i, m in enumerate(messages_ret)])
     return dialogs_id_title, messages_ret
 
 class JSONEncoder(json.JSONEncoder):
@@ -146,7 +146,7 @@ if __name__ == '__main__':
 
     # message_re = '^(?=.*推荐)(?=.*(vps|nat))'  # 只有当字符串中同时出现“推荐”和“vps”或者同时出现“推荐”和“nat”时，该正则表达式才会匹配成功。
     # 最多返回的消息数量
-    limit = 10
+    limit = 1000
     #search(dialog_re, message_re, limit=limit, show=True)
     # search(dialog_re, message_re, limit=limit, show=True, start_date=start_date, end_date=end_date) # 搜寻 search_date 当天的记录
     # search(dialog_re, message_re, limit=limit, show=True, start_date=None, end_date=None) # 原规则

@@ -54,28 +54,63 @@
 
     <script>
         const chat = document.getElementById('chat');
-
+    
         function displayMessage(message) {
             const listItem = document.createElement('li');
+    
+            let webTitle = '';
+            if (message.web_title) {
+                webTitle = `<p class="web-title">${message.web_title}</p>`;
+            }
+    
+            let webDescription = '';
+            if (message.web_description) {
+                webDescription = `<p class="web-description">${message.web_description}</p>`;
+            }
+    
+            let replyMessage = '';
+            if (message.reply_message && message.reply_message.length > 0) {
+                replyMessage = `<p class="reply-message">Reply: ${message.reply_message[0].message}</p>`;
+            }
+    
             listItem.innerHTML = `
                 <p><span class="user">${message.user}</span> <span class="date">${message.date}</span></p>
                 <p class="message">${message.message}</p>
+                ${webTitle}
+                ${webDescription}
+                ${replyMessage}
             `;
             chat.appendChild(listItem);
         }
-
+    
         // Fetch data from output.json and display messages
         fetch('output.json')
             .then(response => response.json())
             .then(json_data => {
+                const groupedMessages = {};
+    
                 json_data.messages.forEach(message => {
-                    displayMessage(message);
+                    if (!groupedMessages[message.dialog]) {
+                        groupedMessages[message.dialog] = [];
+                    }
+                    groupedMessages[message.dialog].push(message);
+                });
+    
+                Object.values(groupedMessages).forEach(dialogMessages => {
+                    const dialogWrapper = document.createElement('div');
+                    dialogWrapper.classList.add('dialog-wrapper');
+    
+                    dialogMessages.forEach(message => {
+                        displayMessage(message);
+                    });
+    
+                    chat.appendChild(dialogWrapper);
                 });
             })
             .catch(error => {
-        console.error('Error fetching data:', error);
-    });
-
-    </script>
+                console.error('Error fetching data:', error);
+            });
+</script>
+    
 </body>
 </html>
