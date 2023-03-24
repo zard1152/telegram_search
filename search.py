@@ -3,6 +3,7 @@ from pprint import pprint
 import time
 from datetime import datetime, timedelta
 import json
+from bson import ObjectId
 
 def search_dialog(dialog_re, options='$i', show=False):
     """通过正则方式检索mongo数据库对话
@@ -114,6 +115,12 @@ def search(dialog_re, message_re, limit=20, options='$i', show=False, start_date
         pprint([(i+1, m) for i, m in enumerate(messages_ret)])
     return dialogs_id_title, messages_ret
 
+class JSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, ObjectId):
+            return str(obj)
+        return super(JSONEncoder, self).default(obj)
+
 def save_results_to_json(dialogs_id_title, messages_ret, file_name="output.json"):
     data = {
         "dialogs": dialogs_id_title,
@@ -121,7 +128,8 @@ def save_results_to_json(dialogs_id_title, messages_ret, file_name="output.json"
     }
     
     with open(file_name, "w", encoding="utf-8") as file:
-        json.dump(data, file, ensure_ascii=False, indent=4)
+        json.dump(data, file, cls=JSONEncoder, ensure_ascii=False, indent=4)
+        
         
 
 search_date = datetime(2023, 3, 22)
