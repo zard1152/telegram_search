@@ -5,15 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JSON Visualization</title>
     <style>
-
-            body {
-                font-family: Arial, sans-serif;
-            }
-            .bold-highlight {
-                font-weight: bold;
-                background-color: yellow;
-            }
-
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 18px; /* Increase font size */
+        }
+        .bold-highlight {
+            font-weight: bold;
+            background-color: darkblue; /* Change background color to dark blue */
+            color: white;
+        }
+        .formatted-json {
+            white-space: pre-wrap; /* Enable automatic line wrapping */
+        }
+        .key-value {
+            display: block; /* Display key-value pairs on separate lines */
+        }
     </style>
 </head>
 <body>
@@ -21,45 +27,45 @@
     <pre id="formatted-json"></pre>
 
     <script>
-const formattedJsonElement = document.getElementById('formatted-json');
+        const formattedJsonElement = document.getElementById('formatted-json');
 
-function formatJson(jsonData) {
-    // Remove the 'dialogs' key from the jsonData object
-    delete jsonData.dialogs;
-
-    return Object.entries(jsonData).map(([key, value]) => {
-        if (key === 'messages') {
-            return `${key}: [\n${value.map(formatMessage).join(',\n')}\n]`;
-        } else {
-            return `${key}: ${value}`;
+        function formatJson(jsonData) {
+            // Remove the 'dialogs' key from the jsonData object
+            delete jsonData.dialogs;
+        
+            return Object.entries(jsonData).map(([key, value]) => {
+                if (key === 'messages') {
+                    return `${key}: [\n${value.map(formatMessage).join(',\n')}\n]`;
+                } else {
+                    return `${key}: ${value}`;
+                }
+            }).join(',\n');
         }
-    }).join(',\n');
-}
-
-function formatMessage(message) {
-    const formattedMessage = Object.entries(message)
-        .filter(([key]) => key !== 'dialogs')
-        .map(([key, value]) => {
-            if (key === 'message' || key === 'date' || key === 'reply_message') {
-                return `<span class="bold-highlight">${key}: ${value}</span>`;
-            } else {
-                return `${key}: ${value}`;
-            }
-        }).join(', ');
-
-    return `{ ${formattedMessage} }`;
-}
-
-// Fetch data from output.json and display customized JSON
-fetch('output.json')
-    .then(response => response.json())
-    .then(json_data => {
-        formattedJsonElement.innerHTML = formatJson(json_data);
-    })
-    .catch(error => {
-        console.error('Error fetching data:', error);
-    });
-
+        
+        function formatMessage(message) {
+            const formattedMessage = Object.entries(message)
+                .filter(([key]) => key !== 'dialogs')
+                .map(([key, value]) => {
+                    if (key === 'message' || key === 'date' || key === 'reply_message') {
+                        return `<span class="key-value bold-highlight">${key}: ${value}</span>`;
+                    } else {
+                        return `<span class="key-value">${key}: ${value}</span>`;
+                    }
+                }).join(', ');
+        
+            return `{ ${formattedMessage} }`;
+        }
+        
+        // Fetch data from output.json and display customized JSON
+        fetch('output.json')
+            .then(response => response.json())
+            .then(json_data => {
+                formattedJsonElement.innerHTML = formatJson(json_data);
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+        
     </script>
 </body>
 </html>
